@@ -1,0 +1,210 @@
+local player = game.Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+
+-- Charger OrionLib
+local OrionLib
+local success, errorMessage = pcall(function()
+    OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/jensonhirst/Orion/main/source"))()
+end)
+
+if not success or not OrionLib then
+    warn("❌ Error: Unable to load OrionLib - " .. (errorMessage or "Unknown"))
+    return
+end
+
+-- **Key System**
+local correctKey = "iii" -- 🔑 Clé correcte
+
+local function requestKey()
+    local keyCorrect = false
+
+    while not keyCorrect do
+        local keyWindow = OrionLib:MakeWindow({
+            Name = "CLMSTB × Key System",
+            IntroText = "Enter your key to access",
+            SaveConfig = false,
+            Resizable = false
+        })
+
+        local KeyTab = keyWindow:MakeTab({
+            Name = "🔑 Key Verification",
+            Icon = "rbxassetid://6031075926"
+        })
+
+        KeyTab:AddTextbox({
+            Name = "Enter your key",
+            Default = "",
+            TextDisappear = true,
+            Callback = function(input)
+                if input == correctKey then
+                    keyCorrect = true
+                    -- Fermer la fenêtre de la clé après validation
+                    keyWindow:Destroy()
+                else
+                    OrionLib:MakeNotification({
+                        Name = "❌ Invalid Key",
+                        Content = "The key you entered is incorrect!",
+                        Time = 3
+                    })
+                end
+            end
+        })
+
+        OrionLib:MakeNotification({
+            Name = "🔑 Key Required",
+            Content = "Enter the correct key to proceed.",
+            Time = 5
+        })
+
+        repeat wait(1) until keyCorrect
+    end
+end
+
+-- **Demande de clé avant de charger le hub**
+requestKey()
+
+-- **Chargement de l'interface après validation**
+local Window = OrionLib:MakeWindow({
+    Name = "CLMSTB × Orion | By CoolMasteeb",
+    IntroText = "Welcome to CLMSTB Hub - Enjoy your free scripts!",
+    SaveConfig = true,
+    ConfigFolder = "OrionSettings",
+    Resizable = true,
+    Draggable = true  -- Cette ligne rend la fenêtre déplaçable
+})
+
+-- **Fonction de notification rapide**
+local function showNotification(title, message, duration)
+    OrionLib:MakeNotification({
+        Name = title,
+        Content = message,
+        Time = duration
+    })
+end
+
+-- **Main Tab**
+local MainTab = Window:MakeTab({
+    Name = "Main",
+    Icon = "rbxassetid://6031075938",
+    PremiumOnly = false
+})
+
+MainTab:AddButton({
+    Name = "Enable ShiftLock",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Shiftlock-22314"))()
+        showNotification("Shiftlock", "Shiftlock has been enabled.", 3)
+    end
+})
+
+MainTab:AddButton({
+    Name = "Execute Infinite Yield",
+    Callback = function()
+        showNotification("Infinite Yield", "Executing Infinite Yield...", 3)
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end
+})
+
+-- **Settings Tab**
+local SettingsTab = Window:MakeTab({
+    Name = "Settings",
+    Icon = "rbxassetid://6031280883",
+    PremiumOnly = false
+})
+
+-- **About Us Tab**
+local AboutUsTab = Window:MakeTab({
+    Name = "About Us",
+    Icon = "rbxassetid://6031075926",
+    PremiumOnly = false
+})
+
+AboutUsTab:AddLabel("Created by CoolMasteeb")
+AboutUsTab:AddLabel("Using OrionLib for UI")
+AboutUsTab:AddLabel("Credits to all script developers!")
+
+-- **Server Hop**
+MainTab:AddButton({
+    Name = "Server Hop",
+    Callback = function()
+        showNotification("Server Hop", "Teleporting to another server...", 3)
+        TeleportService:Teleport(game.PlaceId, player)
+    end
+})
+
+-- **Jeux**
+local games = {
+    {
+        Name = "Blox Fruits",
+        Icon = "rbxassetid://4483345998",
+        ScriptLink = "https://rawscripts.net/raw/BloxFruits/Source.lua",
+        GameID = 18901165922
+    },
+    {
+        Name = "Pets Go!✨️[10xLuck]",
+        Icon = "rbxassetid://4483345998",
+        ScriptLink = "https://rawscripts.net/raw/PETS-GO!-10x-Luck-The-Best-PGO-Script-ZapHub-Thieving-Update-29922",
+        GameID = 18901165922
+    },
+    {
+        Name = "Natural Disaster Survival",
+        Icon = "rbxassetid://4483345998",
+        ScriptLink = "https://rawscripts.net/raw/Natural-Disaster-Survival-NullFire-NDS-24033",
+        GameID = 189707
+    },
+    {
+        Name = "MM2",
+        Icon = "rbxassetid://4483345998",
+        ScriptLink = "https://rawscripts.net/raw/Murder-Mystery-2-MM2-99999",
+        GameID = 189012
+    }
+}
+
+local function executeScript(scriptLink, gameId)
+    showNotification("Loading...", "Running script...", 3)
+    if game.PlaceId ~= gameId then
+        showNotification("Error", "Not in the correct game! Teleporting...", 5)
+        TeleportService:Teleport(gameId, player)
+        return
+    end
+
+    local success = pcall(function()
+        loadstring(game:HttpGet(scriptLink))()
+    end)
+
+    if success then
+        showNotification("Success!", "Script executed successfully!", 3)
+    else
+        showNotification("Error", "Failed to execute script.", 3)
+    end
+end
+
+local function copyScriptToClipboard(scriptLink)
+    setclipboard(scriptLink)
+    showNotification("Script Copied", "The script has been copied! Paste it in your executor!", 5)
+end
+
+for _, game in pairs(games) do
+    local tab = Window:MakeTab({
+        Name = game.Name,
+        Icon = game.Icon,
+        PremiumOnly = false
+    })
+
+    tab:AddButton({
+        Name = "Execute " .. game.Name .. " Script",
+        Callback = function()
+            executeScript(game.ScriptLink, game.GameID)
+        end
+    })
+
+    tab:AddButton({
+        Name = "Copy " .. game.Name .. " Script",
+        Callback = function()
+            copyScriptToClipboard(game.ScriptLink)
+        end
+    })
+end
+
+Window:Initialize()
